@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>net.test.task</groupId>
+    <artifactId>sudoku-solver-root</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+
+    <modules>
+        <module>solver</module>
+    </modules>
+
+    <properties>
+        <java.compiler.version>11</java.compiler.version>
+        <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
+                <configuration>
+                    <source>${java.compiler.version}</source>
+                    <target>${java.compiler.version}</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    
+</project>
