@@ -15,15 +15,10 @@
     <properties>
         <oj.algo.version>48.3.1</oj.algo.version>
         <lombok.version>1.18.14</lombok.version>
-        <lpsolve.version>5.5.2.0</lpsolve.version>
+        <junit.version>5.7.0</junit.version>
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.datumbox</groupId>
-            <artifactId>lpsolve</artifactId>
-            <version>${lpsolve.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.ojalgo</groupId>
             <artifactId>ojalgo</artifactId>
@@ -38,7 +33,13 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.7.0</version>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -1,21 +1,54 @@
 package net.test.task.solver;
 
-import net.test.task.solver.model.Solution;
+import net.test.task.solver.model.Cell;
+import net.test.task.solver.model.MissingCell;
 import org.ojalgo.optimisation.Expression;
 import org.ojalgo.optimisation.ExpressionsBasedModel;
 import org.ojalgo.optimisation.Optimisation;
 import org.ojalgo.optimisation.Variable;
+import org.ojalgo.type.context.NumberContext;
 
+import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class LinearProgrammingBasedSolver implements Solver {
 
+    private static final NumberContext SOLUTION_CONTEXT = new NumberContext(0, RoundingMode.HALF_DOWN);
+
     @Override
-    public List<Solution> solve(Integer[][] gameInput) {
+    public int[][] solve(Integer[][] gameInput) {
         ExpressionsBasedModel model = new ExpressionsBasedModel();
-        List<Solution> solutions = new ArrayList<>();
-        Variable[][][] oneZeroMatrix = buildOneZeroMatrix(gameInput, model, solutions);
+        model.options.solution = SOLUTION_CONTEXT;
+        Map<Cell, Map<Integer, Variable>> cellVariables = new HashMap<>();
+
+        Variable[][][] oneZeroMatrix = new Variable[9][9][9];
+        List<MissingCell> missingCells = new ArrayList<>();
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                //MissingCell missingCell = new MissingCell(i, j);
+                Cell cell = new Cell(i, j);
+                final Integer cellValue = gameInput[i][j];
+                /*if (cellValue == null) {
+                    missingCells.add(missingCell);
+                }*/
+                for (int number = 1; number < 10; number++) {
+                    Variable var = Variable.makeBinary(i + "_" + j + "_" + number);
+                    if (cellValue != null) {
+                        if (cellValue != number) {
+                            var.level(0);
+                        } else {
+                            var.level(1);
+                        }
+                    }
+                    cellVariables.computeIfAbsent(cell, c -> new HashMap<>()).put(number, var);
+                    oneZeroMatrix[i][j][number - 1] = var;
+                    model.addVariable(var);
+                }
+            }
+        }
 
         // each cell has exactly one value
         for (int i = 0; i < 9; i++) {
@@ -71,16 +104,40 @@ public class LinearProgrammingBasedSolver implements Solver {
         }
 
         Optimisation.Result result = model.minimise();
+        System.out.println(result);
+
+        if (result.getState().isFailure()) {
+            return new int[][] {};
+        }
+
         System.out.println(model);
 
-        solutions.forEach(solution -> {
+        int[][] solution = new int[9][9];
+
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                //refactor
+                int value = 0;
+                if (gameInput[i][j] == null) {
+                    for (Map.Entry<Integer, Variable> variable : cellVariables.get(new Cell(i, j)).entrySet()) {
+                        if (variable.getValue().getValue().intValue() == 1) {
+                            value = variable.getKey();
+                        }
+                    }
+                } else {
+                    value = gameInput[i][j];
+                }
+                solution[i][j] = value;
+            }
+        }
+        missingCells.forEach(missingCell -> {
             StringBuilder builder = new StringBuilder();
             builder.append("Row: ");
-            builder.append(solution.getRow());
+            builder.append(missingCell.getRow());
             builder.append(", column: ");
-            builder.append(solution.getColumn());
+            builder.append(missingCell.getColumn());
             builder.append(", value: ");
-            solution.getVariables().forEach((number, var) -> {
+            missingCell.getPossibleValues().forEach((number, var) -> {
                 if (var.getValue().intValue() == 1) {
                     builder.append(number);
                     builder.append("\n");
@@ -88,35 +145,7 @@ public class LinearProgrammingBasedSolver implements Solver {
             });
             System.out.println(builder.toString());
         });
-        return null;
 
-    }
-
-    private Variable[][][] buildOneZeroMatrix(Integer[][] source, ExpressionsBasedModel model, List<Solution> solutions) {
-        Variable[][][] oneZeroMatrix = new Variable[9][9][9];
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                Solution solution = new Solution(i, j);
-                if (source[i][j] == null) {
-                    solutions.add(solution);
-                }
-                for (int number = 1; number < 10; number++) {
-                    Variable var = Variable.make(i + "_" + j + "_" + number);
-                    if (source[i][j] != null) {
-                        if (source[i][j] != number) {
-                            var.level(0);
-                        } else {
-                            var.level(1);
-                        }
-                    } else {
-                        var.binary();
-                        solution.getVariables().put(number, var);
-                    }
-                    oneZeroMatrix[i][j][number - 1] = var;
-                    model.addVariable(var);
-                }
-            }
-        }
-        return oneZeroMatrix;
+        return solution;
     }
 }

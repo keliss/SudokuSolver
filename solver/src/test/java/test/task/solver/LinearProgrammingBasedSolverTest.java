@@ -2,12 +2,19 @@ package test.task.solver;
 
 import net.test.task.solver.LinearProgrammingBasedSolver;
 import net.test.task.solver.Solver;
-import net.test.task.solver.SudokuGameSolver;
-import net.test.task.validator.CompositeValidator;
-import net.test.task.validator.DimensionLengthValidator;
-import net.test.task.validator.NumberRangeValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
+
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class LinearProgrammingBasedSolverTest {
 
@@ -15,25 +22,8 @@ public class LinearProgrammingBasedSolverTest {
 
     @BeforeEach
     public void setup() {
-        solver = new SudokuGameSolver(new LinearProgrammingBasedSolver(), new CompositeValidator.Builder()
-                .addValidator(new DimensionLengthValidator())
-                .addValidator(new NumberRangeValidator())
-                .build());
+        solver = new LinearProgrammingBasedSolver();
     }
 
-    @Test
-    public void test() {
-        Integer[][] input = new Integer[][] {
-                { null,    1,    3,    8, null, null,    4, null, 5    },
-                { null,    2,    4,    6, null,    5, null, null, null },
-                { null,    8,    7, null, null, null,    9,    3, null },
-                {    4,    9, null,    3, null,    6, null, null, null },
-                { null, null,    1, null, null, null,    5, null, null },
-                { null, null, null,    7, null,    1, null,    9,    3 },
-                { null,    6,    9, null, null, null,    7,    4, null },
-                { null, null, null,    2, null,    7,    6,    8, null },
-                {    1, null,    2, null, null,    8,    3,    5, null }
-        };
-        solver.solve(input);
-    }
+
 }
