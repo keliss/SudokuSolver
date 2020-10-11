@@ -1,7 +1,5 @@
 package net.test.task.solver;
 
-import net.test.task.solver.model.Cell;
-import net.test.task.solver.model.MissingCell;
 import org.ojalgo.optimisation.Expression;
 import org.ojalgo.optimisation.ExpressionsBasedModel;
 import org.ojalgo.optimisation.Optimisation;
@@ -9,11 +7,11 @@ import org.ojalgo.optimisation.Variable;
 import org.ojalgo.type.context.NumberContext;
 
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
+/**
+ * This solver is based on the idea described in this article:
+ * https://www.researchgate.net/publication/228615106_An_integer_programming_model_for_the_sudoku_problem
+ */
 public class LinearProgrammingBasedSolver implements Solver {
 
     private static final NumberContext SOLUTION_CONTEXT = new NumberContext(0, RoundingMode.HALF_DOWN);
@@ -22,18 +20,22 @@ public class LinearProgrammingBasedSolver implements Solver {
     public int[][] solve(Integer[][] gameInput) {
         ExpressionsBasedModel model = new ExpressionsBasedModel();
         model.options.solution = SOLUTION_CONTEXT;
-        Map<Cell, Map<Integer, Variable>> cellVariables = new HashMap<>();
 
+        Variable[][][] oneZeroMatrix = buildOneZeroMatrix(model, gameInput);
+
+        addConstraintsOnNumberOfValuesInCell(model, oneZeroMatrix);
+        addConstraintsOnDistinctValuesInRow(model, oneZeroMatrix);
+        addConstraintsOnDistinctValuesInColumn(model, oneZeroMatrix);
+        addConstraintsOnDistinctValuesInRegion(model, oneZeroMatrix);
+
+        return calculateSolution(model, oneZeroMatrix);
+    }
+
+    private Variable[][][] buildOneZeroMatrix(ExpressionsBasedModel model, Integer[][] source) {
         Variable[][][] oneZeroMatrix = new Variable[9][9][9];
-        List<MissingCell> missingCells = new ArrayList<>();
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
-                //MissingCell missingCell = new MissingCell(i, j);
-                Cell cell = new Cell(i, j);
-                final Integer cellValue = gameInput[i][j];
-                /*if (cellValue == null) {
-                    missingCells.add(missingCell);
-                }*/
+                final Integer cellValue = source[i][j];
                 for (int number = 1; number < 10; number++) {
                     Variable var = Variable.makeBinary(i + "_" + j + "_" + number);
                     if (cellValue != null) {
@@ -43,108 +45,88 @@ public class LinearProgrammingBasedSolver implements Solver {
                             var.level(1);
                         }
                     }
-                    cellVariables.computeIfAbsent(cell, c -> new HashMap<>()).put(number, var);
                     oneZeroMatrix[i][j][number - 1] = var;
                     model.addVariable(var);
                 }
             }
         }
+        return oneZeroMatrix;
+    }
 
-        // each cell has exactly one value
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
+    private void addConstraintsOnNumberOfValuesInCell(ExpressionsBasedModel model, Variable[][][] oneZeroMatrix) {
+        for (int row = 0; row < 9; row++) {
+            for (int column = 0; column < 9; column++) {
                 Expression expression = model.addExpression();
                 expression.level(1);
-                for (int k = 0; k < 9; k++) {
-                    final Variable var = oneZeroMatrix[i][j][k];
-                    expression.set(var, 1);
-                }
-                System.out.println(expression.getLinearEntrySet());
-            }
-        }
-
-        // each row has only distinct values
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                Expression expression = model.addExpression();
-                expression.level(1);
-                for (int k = 0; k < 9; k++) {
-                    final Variable var = oneZeroMatrix[i][k][j];
+                for (int number = 0; number < 9; number++) {
+                    final Variable var = oneZeroMatrix[row][column][number];
                     expression.set(var, 1);
                 }
             }
         }
+    }
 
-        // each region has only distinct values
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j += 3) {
-                for (int k = 0; k < 9; k += 3) {
+    private void addConstraintsOnDistinctValuesInRow(ExpressionsBasedModel model, Variable[][][] oneZeroMatrix) {
+        for (int row = 0; row < 9; row++) {
+            for (int number = 0; number < 9; number++) {
+                Expression expression = model.addExpression();
+                expression.level(1);
+                for (int column = 0; column < 9; column++) {
+                    final Variable var = oneZeroMatrix[row][column][number];
+                    expression.set(var, 1);
+                }
+            }
+        }
+    }
+
+    private void addConstraintsOnDistinctValuesInColumn(ExpressionsBasedModel model, Variable[][][] oneZeroMatrix) {
+        for (int column = 0; column < 9; column++) {
+            for (int number = 0; number < 9; number++) {
+                Expression expression = model.addExpression();
+                expression.level(1);
+                for (int row = 0; row < 9; row++) {
+                    final Variable var = oneZeroMatrix[row][column][number];
+                    expression.set(var, 1);
+                }
+            }
+        }
+    }
+
+    private void addConstraintsOnDistinctValuesInRegion(ExpressionsBasedModel model, Variable[][][] oneZeroMatrix) {
+        for (int number = 0; number < 9; number++) {
+            for (int rowBase = 0; rowBase < 9; rowBase += 3) {
+                for (int columnBase = 0; columnBase < 9; columnBase += 3) {
                     Expression expression = model.addExpression();
                     expression.level(1);
-                    for (int l = 0; l < 3; l++) {
-                        for (int d = 0; d < 3; d++) {
-                            final Variable var = oneZeroMatrix[j + l][k + d][i];
+                    for (int rowOffset = 0; rowOffset < 3; rowOffset++) {
+                        for (int columnOffset = 0; columnOffset < 3; columnOffset++) {
+                            final Variable var = oneZeroMatrix[rowBase + rowOffset][columnBase + columnOffset][number];
                             expression.set(var, 1);
                         }
                     }
                 }
             }
         }
+    }
 
-        // each column has only distinct values
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                Expression expression = model.addExpression();
-                expression.level(1);
-                for (int k = 0; k < 9; k++) {
-                    final Variable var = oneZeroMatrix[k][i][j];
-                    expression.set(var, 1);
-                }
-            }
-        }
-
+    private int[][] calculateSolution(ExpressionsBasedModel model, Variable[][][] oneZeroMatrix) {
         Optimisation.Result result = model.minimise();
-        System.out.println(result);
 
         if (result.getState().isFailure()) {
             return new int[][] {};
         }
 
-        System.out.println(model);
-
         int[][] solution = new int[9][9];
 
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                //refactor
-                int value = 0;
-                if (gameInput[i][j] == null) {
-                    for (Map.Entry<Integer, Variable> variable : cellVariables.get(new Cell(i, j)).entrySet()) {
-                        if (variable.getValue().getValue().intValue() == 1) {
-                            value = variable.getKey();
-                        }
+        for (int row = 0; row < 9; row++) {
+            for (int column = 0; column < 9; column++) {
+                for (int number = 0; number < 9; number++) {
+                    if (oneZeroMatrix[row][column][number].getValue().intValue() == 1) {
+                        solution[row][column] = number + 1;
                     }
-                } else {
-                    value = gameInput[i][j];
                 }
-                solution[i][j] = value;
             }
         }
-        missingCells.forEach(missingCell -> {
-            StringBuilder builder = new StringBuilder();
-            builder.append("Row: ");
-            builder.append(missingCell.getRow());
-            builder.append(", column: ");
-            builder.append(missingCell.getColumn());
-            builder.append(", value: ");
-            missingCell.getPossibleValues().forEach((number, var) -> {
-                if (var.getValue().intValue() == 1) {
-                    builder.append(number);
-                    builder.append("\n");
-                }
-            });
-            System.out.println(builder.toString());
-        });
 
         return solution;
     }
