@@ -14,7 +14,6 @@
 
     <properties>
         <oj.algo.version>48.3.1</oj.algo.version>
-        <lombok.version>1.18.14</lombok.version>
         <junit.version>5.7.0</junit.version>
     </properties>
 
@@ -23,12 +22,6 @@
             <groupId>org.ojalgo</groupId>
             <artifactId>ojalgo</artifactId>
             <version>${oj.algo.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

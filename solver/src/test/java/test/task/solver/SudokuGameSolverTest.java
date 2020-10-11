@@ -4,7 +4,7 @@ import net.test.task.solver.LinearProgrammingBasedSolver;
 import net.test.task.solver.Solver;
 import net.test.task.solver.SudokuGameSolver;
 import net.test.task.validator.CompositeValidator;
-import net.test.task.validator.DimensionLengthValidator;
+import net.test.task.validator.DimensionEqualityValidator;
 import net.test.task.validator.NumberRangeValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ public class SudokuGameSolverTest {
     @BeforeEach
     public void setup() {
         final CompositeValidator validator = new CompositeValidator.Builder()
-                .addValidator(new DimensionLengthValidator())
+                .addValidator(new DimensionEqualityValidator())
                 .addValidator(new NumberRangeValidator())
                 .build();
         solver = new SudokuGameSolver(new LinearProgrammingBasedSolver(), validator);

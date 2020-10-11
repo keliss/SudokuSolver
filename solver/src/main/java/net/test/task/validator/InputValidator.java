@@ -4,5 +4,5 @@ import net.test.task.validator.model.ValidationResult;
 
 public interface InputValidator {
 
-    ValidationResult validate(Integer[][] gameInput);
+    ValidationResult validate(Integer[][] matrix);
 }

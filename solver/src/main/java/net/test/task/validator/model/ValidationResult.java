@@ -1,8 +1,5 @@
 package net.test.task.validator.model;
 
-import lombok.Data;
-
-@Data
 public class ValidationResult {
 
     public static final ValidationResult VALID = new ValidationResult(true, null);
@@ -17,5 +14,9 @@ public class ValidationResult {
 
     public boolean isNotValid() {
         return !isValid;
+    }
+
+    public String getValidationFailureMessage() {
+        return validationFailureMessage;
     }
 }

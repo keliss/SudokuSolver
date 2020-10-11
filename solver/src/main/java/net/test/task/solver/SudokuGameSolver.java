@@ -13,12 +13,12 @@ public class SudokuGameSolver implements Solver {
         this.validator = validator;
     }
 
-    public int[][] solve(Integer[][] gameInput) {
-        ValidationResult inputValidationResult = validator.validate(gameInput);
+    public int[][] solve(Integer[][] sudokuMatrix) {
+        ValidationResult inputValidationResult = validator.validate(sudokuMatrix);
         if (inputValidationResult.isNotValid()) {
             throw new IllegalArgumentException("Input is not valid for the Sudoku game: "
                     + inputValidationResult.getValidationFailureMessage());
         }
-        return delegate.solve(gameInput);
+        return delegate.solve(sudokuMatrix);
     }
 }

@@ -9,23 +9,22 @@ import org.ojalgo.type.context.NumberContext;
 import java.math.RoundingMode;
 
 /**
- * This solver is based on the idea described in this article:
+ * This solver is based on the idea described in the following article:
  * https://www.researchgate.net/publication/228615106_An_integer_programming_model_for_the_sudoku_problem
  */
 public class LinearProgrammingBasedSolver implements Solver {
 
     private static final NumberContext SOLUTION_CONTEXT = new NumberContext(0, RoundingMode.HALF_DOWN);
+    private static final String DIMENSION_SEPARATOR = "_";
 
     @Override
-    public int[][] solve(Integer[][] gameInput) {
+    public int[][] solve(Integer[][] sudokuMatrix) {
         ExpressionsBasedModel model = new ExpressionsBasedModel();
         model.options.solution = SOLUTION_CONTEXT;
 
-        Variable[][][] oneZeroMatrix = buildOneZeroMatrix(model, gameInput);
+        Variable[][][] oneZeroMatrix = buildOneZeroMatrix(model, sudokuMatrix);
 
-        addConstraintsOnNumberOfValuesInCell(model, oneZeroMatrix);
-        addConstraintsOnDistinctValuesInRow(model, oneZeroMatrix);
-        addConstraintsOnDistinctValuesInColumn(model, oneZeroMatrix);
+        addConstraintsOnNumberOfDistinctValuesInAllDimensions(model, oneZeroMatrix);
         addConstraintsOnDistinctValuesInRegion(model, oneZeroMatrix);
 
         return calculateSolution(model, oneZeroMatrix);
@@ -36,16 +35,16 @@ public class LinearProgrammingBasedSolver implements Solver {
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
                 final Integer cellValue = source[i][j];
-                for (int number = 1; number < 10; number++) {
-                    Variable var = Variable.makeBinary(i + "_" + j + "_" + number);
+                for (int number = 0; number < 9; number++) {
+                    Variable var = Variable.makeBinary(i + DIMENSION_SEPARATOR + j + DIMENSION_SEPARATOR + number);
                     if (cellValue != null) {
-                        if (cellValue != number) {
+                        if (cellValue != number + 1) {
                             var.level(0);
                         } else {
                             var.level(1);
                         }
                     }
-                    oneZeroMatrix[i][j][number - 1] = var;
+                    oneZeroMatrix[i][j][number] = var;
                     model.addVariable(var);
                 }
             }
@@ -53,40 +52,22 @@ public class LinearProgrammingBasedSolver implements Solver {
         return oneZeroMatrix;
     }
 
-    private void addConstraintsOnNumberOfValuesInCell(ExpressionsBasedModel model, Variable[][][] oneZeroMatrix) {
-        for (int row = 0; row < 9; row++) {
-            for (int column = 0; column < 9; column++) {
-                Expression expression = model.addExpression();
-                expression.level(1);
-                for (int number = 0; number < 9; number++) {
-                    final Variable var = oneZeroMatrix[row][column][number];
-                    expression.set(var, 1);
-                }
-            }
-        }
-    }
-
-    private void addConstraintsOnDistinctValuesInRow(ExpressionsBasedModel model, Variable[][][] oneZeroMatrix) {
-        for (int row = 0; row < 9; row++) {
-            for (int number = 0; number < 9; number++) {
-                Expression expression = model.addExpression();
-                expression.level(1);
-                for (int column = 0; column < 9; column++) {
-                    final Variable var = oneZeroMatrix[row][column][number];
-                    expression.set(var, 1);
-                }
-            }
-        }
-    }
-
-    private void addConstraintsOnDistinctValuesInColumn(ExpressionsBasedModel model, Variable[][][] oneZeroMatrix) {
-        for (int column = 0; column < 9; column++) {
-            for (int number = 0; number < 9; number++) {
-                Expression expression = model.addExpression();
-                expression.level(1);
-                for (int row = 0; row < 9; row++) {
-                    final Variable var = oneZeroMatrix[row][column][number];
-                    expression.set(var, 1);
+    private void addConstraintsOnNumberOfDistinctValuesInAllDimensions(ExpressionsBasedModel model, Variable[][][] oneZeroMatrix) {
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                Expression numberOfValuesInSingleCellConstraint = model.addExpression();
+                numberOfValuesInSingleCellConstraint.level(1);
+                Expression distinctValuesInRowConstraint = model.addExpression();
+                distinctValuesInRowConstraint.level(1);
+                Expression distinctValuesInColumnConstraint = model.addExpression();
+                distinctValuesInColumnConstraint.level(1);
+                for (int k = 0; k < 9; k++) {
+                    final Variable numberTraversalVariable = oneZeroMatrix[i][j][k];
+                    numberOfValuesInSingleCellConstraint.set(numberTraversalVariable, 1);
+                    final Variable rowTraversalVariable = oneZeroMatrix[i][k][j];
+                    distinctValuesInRowConstraint.set(rowTraversalVariable, 1);
+                    final Variable columnTraversalVariable = oneZeroMatrix[k][j][i];
+                    distinctValuesInColumnConstraint.set(columnTraversalVariable, 1);
                 }
             }
         }
@@ -96,12 +77,12 @@ public class LinearProgrammingBasedSolver implements Solver {
         for (int number = 0; number < 9; number++) {
             for (int rowBase = 0; rowBase < 9; rowBase += 3) {
                 for (int columnBase = 0; columnBase < 9; columnBase += 3) {
-                    Expression expression = model.addExpression();
-                    expression.level(1);
+                    Expression distinctValuesInRegionConstraint = model.addExpression();
+                    distinctValuesInRegionConstraint.level(1);
                     for (int rowOffset = 0; rowOffset < 3; rowOffset++) {
                         for (int columnOffset = 0; columnOffset < 3; columnOffset++) {
-                            final Variable var = oneZeroMatrix[rowBase + rowOffset][columnBase + columnOffset][number];
-                            expression.set(var, 1);
+                            final Variable regionTraversalVariable = oneZeroMatrix[rowBase + rowOffset][columnBase + columnOffset][number];
+                            distinctValuesInRegionConstraint.set(regionTraversalVariable, 1);
                         }
                     }
                 }
