@@ -1,6 +1,6 @@
 package test.task.validator;
 
-import net.test.task.validator.DimensionEqualityValidator;
+import net.test.task.validator.DimensionLengthValidator;
 import net.test.task.validator.model.ValidationResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,13 +10,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class DimensionEqualityValidatorTest {
+public class DimensionLengthValidatorTest {
 
-    private DimensionEqualityValidator validator;
+    private DimensionLengthValidator validator;
 
     @BeforeEach
     public void setup() {
-        validator = new DimensionEqualityValidator();
+        validator = new DimensionLengthValidator();
     }
 
     @Test

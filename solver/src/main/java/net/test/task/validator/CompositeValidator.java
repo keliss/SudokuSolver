@@ -14,9 +14,9 @@ public class CompositeValidator implements InputValidator {
     }
 
     @Override
-    public ValidationResult validate(Integer[][] matrix) {
+    public ValidationResult validate(Integer[][] sudokuMatrix) {
         return delegates.stream()
-                .map(validator -> validator.validate(matrix))
+                .map(validator -> validator.validate(sudokuMatrix))
                 .filter(ValidationResult::isNotValid)
                 .findFirst()
                 .orElse(ValidationResult.VALID);
