@@ -36,7 +36,7 @@ public class LinearProgrammingBasedSolver implements Solver {
         Variable[][][] numberPickedFlagMatrix = new Variable[DIMENSION_LENGTH][DIMENSION_LENGTH][DIMENSION_LENGTH];
         for (int row = 0; row < DIMENSION_LENGTH; row++) {
             for (int column = 0; column < DIMENSION_LENGTH; column++) {
-                final Integer cellValue = source[row][column];
+                Integer cellValue = source[row][column];
                 for (int number = 0; number < DIMENSION_LENGTH; number++) {
                     Variable numberPickedFlag =
                             Variable.makeBinary(row + DIMENSION_SEPARATOR + column + DIMENSION_SEPARATOR + number);
@@ -69,13 +69,13 @@ public class LinearProgrammingBasedSolver implements Solver {
                 distinctValuesInColumnConstraint.level(1);
 
                 for (int k = 0; k < DIMENSION_LENGTH; k++) {
-                    final Variable numberTraversalVariable = numberPickedFlagMatrix[i][j][k];
+                    Variable numberTraversalVariable = numberPickedFlagMatrix[i][j][k];
                     numberOfValuesInSingleCellConstraint.set(numberTraversalVariable, 1);
 
-                    final Variable rowTraversalVariable = numberPickedFlagMatrix[i][k][j];
+                    Variable rowTraversalVariable = numberPickedFlagMatrix[i][k][j];
                     distinctValuesInRowConstraint.set(rowTraversalVariable, 1);
 
-                    final Variable columnTraversalVariable = numberPickedFlagMatrix[k][j][i];
+                    Variable columnTraversalVariable = numberPickedFlagMatrix[k][j][i];
                     distinctValuesInColumnConstraint.set(columnTraversalVariable, 1);
                 }
             }
@@ -90,7 +90,7 @@ public class LinearProgrammingBasedSolver implements Solver {
                     distinctValuesInRegionConstraint.level(1);
                     for (int rowOffset = 0; rowOffset < 3; rowOffset++) {
                         for (int columnOffset = 0; columnOffset < 3; columnOffset++) {
-                            final Variable regionTraversalVariable =
+                            Variable regionTraversalVariable =
                                     numberPickedFlagMatrix[rowBase + rowOffset][columnBase + columnOffset][number];
                             distinctValuesInRegionConstraint.set(regionTraversalVariable, 1);
                         }
