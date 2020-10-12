@@ -5,6 +5,8 @@ Since there are many different approaches to solving this problem, the generic S
 Same goes for InputValidator interface. This allows for easier extension of code and increases testability.
 For the sake of simplicity and readability, current implementation considers as valid only 9x9 Sudoku,
 although there's absolutely no problem in adding support for other field sizes.
+The implemented solver expects as input a 9x9 matrix with null values in cells to be filled.
+The output is a completely filled 9x9 matrix (see tests).
 
 ### Algorithm
 The algorithm is based on the mathematical model described in this article:
