@@ -66,12 +66,57 @@ public class CorrectSudokuProvider implements ArgumentsProvider {
                 {    7,    9,    1, null,    5, null,    6, null,    8 }
         };
         int[][] unsolvableOutput = new int[][] {};
-
+        Integer[][] oneMoreEasyInput = new Integer[][] {
+                {    2, null,    5, null, null,    9, null, null,    4 },
+                { null, null, null, null, null, null,    3, null,    7 },
+                {    7, null, null,    8,    5,    6, null,    1, null },
+                {    4,    5, null,    7, null, null, null, null, null },
+                { null, null,    9, null, null, null,    1, null, null },
+                { null, null, null, null, null,    2, null,    8,    5 },
+                { null,    2, null,    4,    1,    8, null, null,    6 },
+                {    6, null,    8, null, null, null, null, null, null },
+                {    1, null, null,    2, null, null,    7, null,    8 }
+        };
+        int[][] oneMoreEasyOutput = new int[][] {
+                {    2,    1,    5,    3,    7,    9,    8,    6,    4 },
+                {    9,    8,    6,    1,    2,    4,    3,    5,    7 },
+                {    7,    3,    4,    8,    5,    6,    2,    1,    9 },
+                {    4,    5,    2,    7,    8,    1,    6,    9,    3 },
+                {    8,    6,    9,    5,    4,    3,    1,    7,    2 },
+                {    3,    7,    1,    6,    9,    2,    4,    8,    5 },
+                {    5,    2,    7,    4,    1,    8,    9,    3,    6 },
+                {    6,    4,    8,    9,    3,    7,    5,    2,    1 },
+                {    1,    9,    3,    2,    6,    5,    7,    4,    8 }
+        };
+        Integer[][] oneMoreDifficultInput = new Integer[][] {
+                { null, null, null, null, null, null,    2, null, null },
+                { null,    8, null, null, null,    7, null,    9, null },
+                {    6, null,    2, null, null, null,    5, null, null },
+                { null,    7, null, null,    6, null, null, null, null },
+                { null, null, null,    9, null,    1, null, null, null },
+                { null, null, null, null,    2, null, null,    4, null },
+                { null, null,    5, null, null, null,    6, null,    3 },
+                { null,    9, null,    4, null, null, null,    7, null },
+                { null, null,    6, null, null, null, null, null, null }
+        };
+        int[][] oneMoreDifficultOutput = new int[][] {
+                {    9,    5,    7,    6,    1,    3,    2,    8,    4 },
+                {    4,    8,    3,    2,    5,    7,    1,    9,    6 },
+                {    6,    1,    2,    8,    4,    9,    5,    3,    7 },
+                {    1,    7,    8,    3,    6,    4,    9,    5,    2 },
+                {    5,    2,    4,    9,    7,    1,    3,    6,    8 },
+                {    3,    6,    9,    5,    2,    8,    7,    4,    1 },
+                {    8,    4,    5,    7,    9,    2,    6,    1,    3 },
+                {    2,    9,    1,    4,    3,    6,    8,    7,    5 },
+                {    7,    3,    6,    1,    8,    5,    4,    2,    9 }
+        };
 
         return Stream.of(
                 Arguments.of(easyInput, easyOutput),
                 Arguments.of(difficultInput, difficultOutput),
-                Arguments.of(unsolvableInput, unsolvableOutput)
+                Arguments.of(unsolvableInput, unsolvableOutput),
+                Arguments.of(oneMoreEasyInput, oneMoreEasyOutput),
+                Arguments.of(oneMoreDifficultInput, oneMoreDifficultOutput)
         );
     }
 }
